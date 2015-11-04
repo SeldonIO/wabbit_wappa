@@ -204,7 +204,7 @@ class VWResult():
 
 class VW():
     """Wrapper for VW executable, handling online input and outputs."""
-    def __init__(self, command=None, active_mode=False, dummy_mode=False, **kwargs):
+    def __init__(self, command=None, active_mode=False, dummy_mode=False, server_mode=False,  **kwargs):
         """'command' is the full command-line necessary to run VW.  E.g.
         vw --loss_function logistic -p /dev/stdout --quiet
         -p /dev/stdout --quiet is mandatory for compatibility,
@@ -232,13 +232,20 @@ class VW():
                 active_settings.update(kwargs)
                 kwargs = active_settings
                 port = kwargs.get('port')
+            elif server_mode:
+                server_settings = active_learner.get_server_default_settings()
+                # Overwrite active settings with kwargs
+                server_settings.update(kwargs)
+                kwargs = server_settings
+                port = kwargs.get('port')
             command = make_command_line(**kwargs)
         self.active_mode = active_mode
         self.dummy_mode = dummy_mode
+        self.server_mode = server_mode
         if dummy_mode:
             self.vw_process = None
         else:
-            if active_mode:
+            if active_mode or server_mode:
                 self.vw_process = active_learner.ActiveVWProcess(command, port=port)
             else:
                 self.vw_process = pexpect.spawn(command)
@@ -427,7 +434,8 @@ def make_command_line(predictions='/dev/stdout',
         kwargs['q:'] = q_colon
     kwargs['predictions'] = predictions
     kwargs['quiet'] = quiet
-    kwargs['save_resume'] = save_resume
+    if save_resume:
+        kwargs['save_resume'] = save_resume
     for key, value in kwargs.items():
         if len(key)==1:
             option = '-{}'.format(key)

@@ -23,11 +23,22 @@ MAX_CONNECTION_ATTEMPTS = 50
 
 
 def get_active_default_settings():
-    result = dict(active=True,
-                  port=DEFAULT_PORT,
-                  predictions='/dev/null',
+    result = dict(
+        active=True,
+        port=DEFAULT_PORT,
+        predictions='/dev/null',
                   )
     return result
+
+def get_server_default_settings():
+    result = dict(
+        save_resume=False,
+        port=DEFAULT_PORT,
+        predictions='/dev/null',
+                  )
+    return result
+
+
 
 
 class ActiveVWProcess():
